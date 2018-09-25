@@ -438,11 +438,13 @@ instance : is_prime_ideal (supp v) :=
       exact linear_ordered_comm_group.extend.eq_zero_or_eq_zero_of_mul_eq_zero _ _ hxy
     end }
 
-/-
-definition extension_to_integral_domain {α : Type} [linear_ordered_comm_group α]
-  {R : Type} [comm_ring R] (f : R → option α) [H : is_valuation f] :
-  (comm_ring.quotient R (supp f)) → option α := sorry
--/
+definition extension_to_integral_domain : valuation (quotient_ring.quotient (supp v)) Γ :=
+{ f := sorry,
+  map_zero := sorry,
+  map_one := sorry,
+  map_mul := sorry,
+  map_add := sorry
+}
 
 definition value_group {R : Type u1} [comm_ring R] {Γ : Type u2} [linear_ordered_comm_group Γ]
   (v : valuation R Γ) := 
