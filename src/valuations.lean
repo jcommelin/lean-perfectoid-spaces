@@ -1,4 +1,38 @@
-/- quotes from mathlib (mostly Mario) (all 2018)
+/- quotes from mathlib (mostly Mario) (all 2018)namespace quotient_ring -- move this to the right file
+open is_submodule
+variables {α : Type u} [comm_ring α] {β : Type v} [comm_ring β]
+
+local attribute [instance] quotient_rel
+
+def lift (S : set α) [is_ideal S] (f : α → β) [is_ring_hom f] (H : ∀ (a : α), a ∈ S → f a = 0) :
+quotient S → β :=
+quotient.lift f $ λ a b h,
+eq_of_sub_eq_zero (by rw quotient_rel_eq at h;
+  simpa only [is_ring_hom.map_sub f] using H _ h)
+
+variables {S : set α} [is_ideal S] {f : α → β} [is_ring_hom f] {H : ∀ (a : α), a ∈ S → f a = 0} {a : α}
+
+@[simp] lemma lift_mk : lift S f H ⟦a⟧ = f a := rfl
+
+instance : is_ring_hom (lift S f H) :=
+{ map_one := by show lift S f H ⟦1⟧ = 1; simp [is_ring_hom.map_one f],
+  map_add := λ a₁ a₂, quotient.induction_on₂ a₁ a₂ $ λ a₁ a₂, begin
+    show lift S f H (mk a₁ + mk a₂) = lift S f H ⟦a₁⟧ + lift S f H ⟦a₂⟧,
+    have := quotient_ring.is_ring_hom_mk S,
+    rw ← this.map_add,
+    show lift S f H (⟦a₁ + a₂⟧) = lift S f H ⟦a₁⟧ + lift S f H ⟦a₂⟧,
+    simp only [lift_mk, is_ring_hom.map_add f],
+  end,
+  map_mul := λ a₁ a₂, quotient.induction_on₂ a₁ a₂ $ λ a₁ a₂, begin
+    show lift S f H (mk a₁ * mk a₂) = lift S f H ⟦a₁⟧ * lift S f H ⟦a₂⟧,
+    have := quotient_ring.is_ring_hom_mk S,
+    rw ← this.map_mul,
+    show lift S f H (⟦a₁ * a₂⟧) = lift S f H ⟦a₁⟧ * lift S f H ⟦a₂⟧,
+    simp only [lift_mk, is_ring_hom.map_mul f],
+  end }
+
+end quotient_ring
+
 
 Jul03
 
@@ -89,6 +123,7 @@ import ring_theory.ideals
 import for_mathlib.subrel 
 import for_mathlib.ideals 
 import group_theory.subgroup
+import for_mathlib.quotient
 
 universes u1 u2
 
@@ -438,13 +473,25 @@ instance : is_prime_ideal (supp v) :=
       exact linear_ordered_comm_group.extend.eq_zero_or_eq_zero_of_mul_eq_zero _ _ hxy
     end }
 
+section
+open quotient_ring
+
+local attribute [instance] quotient_rel
+
 definition extension_to_integral_domain : valuation (quotient_ring.quotient (supp v)) Γ :=
-{ f := sorry,
-  map_zero := sorry,
+{ f := @quotient.lift _ _ (quotient_rel (supp v)) v begin
+    rintros a b h,
+    sorry
+  end,
+  map_zero := begin
+
+  end,
   map_one := sorry,
   map_mul := sorry,
   map_add := sorry
 }
+
+end
 
 definition value_group {R : Type u1} [comm_ring R] {Γ : Type u2} [linear_ordered_comm_group Γ]
   (v : valuation R Γ) := 
