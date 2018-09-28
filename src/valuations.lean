@@ -124,6 +124,7 @@ import for_mathlib.subrel
 import for_mathlib.ideals 
 import group_theory.subgroup
 import for_mathlib.quotient
+import tactic.tidy
 
 universes u1 u2
 
@@ -344,6 +345,9 @@ theorem mul_zero : ∀ x : option α, x * 0 = 0
 theorem none_mul : ∀ x : option α, none * x = none := zero_mul
 theorem mul_none : ∀ x : option α, x * none = none := mul_zero
 
+theorem zero_le : ∀ x : option α, 0 ≤ x
+| _ := trivial
+
 theorem eq_zero_or_eq_zero_of_mul_eq_zero : ∀ x y : option α, x * y = 0 → x = 0 ∨ y = 0
 | (some x) (some y) hxy := false.elim $ option.no_confusion hxy
 | none     _        hxy := or.inl rfl
@@ -385,6 +389,11 @@ namespace valuation
 variables {Γ : Type*} [linear_ordered_comm_group Γ]
 variables {R : Type*} [comm_ring R]
 variables (v : valuation R Γ) {x y z : R}
+
+lemma map_zero' : v 0 = 0 := valuation.map_zero _
+lemma map_one' : v 1 = 1 := valuation.map_one _
+lemma map_mul' : ∀ x y, v (x * y) = v x * v y := valuation.map_mul _
+lemma map_add' : ∀ x y, v (x + y) ≤ v x ∨ v (x + y) ≤ v y := valuation.map_add _
 
 theorem map_unit : x * y = 1 → option.is_some (v x) :=
 begin
@@ -481,13 +490,33 @@ local attribute [instance] quotient_rel
 definition extension_to_integral_domain : valuation (quotient_ring.quotient (supp v)) Γ :=
 { f := @quotient.lift _ _ (quotient_rel (supp v)) v begin
     rintros a b h,
-    sorry
+    apply le_antisymm,
+    { have := v.map_add' b (a - b),
+      change v (a - b) = 0 at h,
+      rw h at this,
+      simp at this,
+      cases this, exact this,
+      exact le_trans this (linear_ordered_comm_group.extend.zero_le _) },
+    { have := v.map_add' a (b - a),
+      replace h := @setoid.symm _ (quotient_rel _) a b h,
+      change v (b - a) = 0 at h,
+      rw h at this,
+      have H : (a + (b - a)) = b, by ring, -- why can't I use "simp at this", like above?
+      rw H at this,
+      cases this, exact this,
+      exact le_trans this (linear_ordered_comm_group.extend.zero_le _) }
   end,
   map_zero := begin
-
+    sorry
   end,
   map_one := sorry,
-  map_mul := sorry,
+  map_mul := begin
+    intros x y,
+    rcases x,
+    rcases y,
+    dsimp [quotient.lift],
+    simp [quot.lift_beta],
+  end,
   map_add := sorry
 }
 
@@ -504,7 +533,7 @@ instance {R : Type u1} [comm_ring R] {Γ : Type u2} [linear_ordered_comm_group �
    (v : valuation R Γ) : group (value_group v) :=
   @subtype.group _ _ (value_group v) (group.closure.is_subgroup {a : Γ | ∃ r : R, v r = some a})
 
-instance valutaion.group_f {R : Type u1} [comm_ring R] {Γ : Type u2} [linear_ordered_comm_group Γ]
+instance valuation.group_f {R : Type u1} [comm_ring R] {Γ : Type u2} [linear_ordered_comm_group Γ]
    (f : R → option Γ) [is_valuation f] : group (value_group_f f) :=
   @subtype.group _ _ (value_group_f f) (group.closure.is_subgroup {a : Γ | ∃ r : R, f r = some a})
 
