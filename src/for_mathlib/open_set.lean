@@ -78,39 +78,45 @@ split; intro h,
       refine ⟨V, ⟨V,hV,rfl⟩, H⟩ } }
 end
 
-lemma is_basis_iff₂ {B : set (open_set X)} :
-is_basis B ↔ ∀ U : open_set X, ∃ Us ⊆ B, U = Sup Us :=
-begin
-  split,
-  { intros hB U,
-    rcases sUnion_basis_of_is_open hB U.is_open with ⟨sUs, H, hU⟩,
-    existsi {U : open_set X | U ∈ B ∧ U.s ∈ sUs},
-    split,
-    { intros U hU, exact hU.left },
-    { have : sUs = open_set.s '' {U : open_set X | U ∈ B ∧ U.s ∈ sUs},
-      begin sorry end,
-      rw [this, ← Sup_s] at hU,
-      refine le_antisymm _ _,
-      exact le_of_eq hU,
-      sorry } },
-  { intro h,
-    rw is_basis_iff₁,
-    intros U x hx,
-    rcases h U with ⟨Us, hUs, H⟩,
-    replace H := congr_arg open_set.s H,
-    rw Sup_s at H,
-    change x ∈ U.s at hx,
-    rw H at hx,
-    rcases set.mem_sUnion.mp hx with ⟨sV, ⟨⟨V,H₁,H₂⟩,hsV⟩⟩,
-    refine ⟨V,hUs H₁,_⟩,
-    cases V, dsimp at H₂, subst H₂,
-    refine ⟨hsV,_⟩,
-    change V_s ⊆ U.s, rw H,
-    exact set.subset_sUnion_of_mem ⟨⟨V_s,V_is_open⟩,⟨H₁,rfl⟩⟩, },
-end
+-- lemma is_basis_iff₂ {B : set (open_set X)} :
+-- is_basis B ↔ ∀ U : open_set X, ∃ Us ⊆ B, U = Sup Us :=
+-- begin
+--   split,
+--   { intros hB U,
+--     rcases sUnion_basis_of_is_open hB U.is_open with ⟨sUs, H, hU⟩,
+--     existsi {U : open_set X | U ∈ B ∧ U.s ∈ sUs},
+--     split,
+--     { intros U hU, exact hU.left },
+--     { have : sUs = open_set.s '' {U : open_set X | U ∈ B ∧ U.s ∈ sUs},
+--       begin sorry end,
+--       rw [this, ← Sup_s] at hU,
+--       refine le_antisymm _ _,
+--       exact le_of_eq hU,
+--       sorry } },
+--   { intro h,
+--     rw is_basis_iff₁,
+--     intros U x hx,
+--     rcases h U with ⟨Us, hUs, H⟩,
+--     replace H := congr_arg open_set.s H,
+--     rw Sup_s at H,
+--     change x ∈ U.s at hx,
+--     rw H at hx,
+--     rcases set.mem_sUnion.mp hx with ⟨sV, ⟨⟨V,H₁,H₂⟩,hsV⟩⟩,
+--     refine ⟨V,hUs H₁,_⟩,
+--     cases V, dsimp at H₂, subst H₂,
+--     refine ⟨hsV,_⟩,
+--     change V_s ⊆ U.s, rw H,
+--     exact set.subset_sUnion_of_mem ⟨⟨V_s,V_is_open⟩,⟨H₁,rfl⟩⟩, },
+-- end
 
 def univ : open_set X :=
 { s := set.univ,
   is_open := is_open_univ }
+
+
+def cover_by_basic_opens (B : set (open_set X)) (U : open_set X) :=
+{ Us : set (open_set X) | Us ⊆ B ∧ U = Sup Us }
+
+local notation B`-cover` := cover_by_basic_opens B
 
 end open_set
